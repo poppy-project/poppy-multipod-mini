@@ -1,58 +1,69 @@
 include <poppy_multipod_mini_def.scad>
 
-/*include <robotis-scad/ollo/ollo_def.scad>*/
-/*include <robotis-scad/dynamixel/xl320_def.scad>*/
-/*include <robotis-scad/specific_frames/specific_frame_def.scad>*/
+use <robotis-scad/dynamixel/xl320.scad>
 
-/*use <robotis-scad/dynamixel/xl320.scad>*/
-
-/*use <robotis-scad/frames/three_ollo_to_horn_frame.scad>*/
-
+use <robotis-scad/frames/side_to_side_frame.scad>
+use <robotis-scad/frames/U_horn_to_U_horn_frame.scad>
+use <robotis-scad/frames/U_horn_frame.scad>
 
 use <MCAD/rotate.scad>
 
-module snake_segment(length=elementLenght, nLayer=1, withConnector=true) {
-  translate([0,length+3*(OlloSpacing),0]) {
-    xl320_two_horns();
-    if (withConnector==true) {
-      translate([0, -OlloSpacing*3, 0])
-        rotate([0,0,180])
-          three_ollo_to_horn_frame(length=length, nLayer=nLayer);
+function compute_leg_angle(legNumber, nLegs) = (legNumber-1)*(360/nLegs);
+
+module add_support(nLegs, supportRadius, supportType) {
+
+  if (supportType=="ring") {
+
+    difference () {
+      union() {
+        cylinder(h=OlloSegmentWidth, r=supportRadius-defaultSupportMotorAppendixLength, center=true);
+        for (i=[1:nLegs]) {
+          rotate([0,0,compute_leg_angle(i, nLegs)])
+            translate([supportRadius,0,0])
+            rotate([0,0,90])
+              side_to_side_frame(supportRadius);
+        }
+      }
+      cylinder(h=OlloSegmentWidth, r=supportRadius-defaultSupportMotorAppendixLength-ollo_segment_thickness(1), center=true);
     }
   }
+
 }
 
-module add_snake_segment(length=elementLenght, nLayer=1, withConnector=true) {
-  snake_segment(length=length, nLayer=nLayer, withConnector=withConnector);
-  translate([0,length+3*(OlloSpacing),0])
-    for(i = [0 : $children - 1])
-      children(i);
-}
+module add_leg(legType, feetType) {
 
-module snake_two_segments(length=elementLenght, nLayer=1, withConnector=true) {
-    add_snake_segment(length, nLayer, withConnector)
-      rotate([0,90,0])
-        snake_segment(length, nLayer);
-}
-
-module add_snake_two_segments(length=elementLenght, nLayer=1, withConnector=true) {
-  snake_two_segments(length, nLayer, withConnector);
-  translate([0,2*(length+3*(OlloSpacing)),0])
-    for(i = [0 : $children - 1])
-      children(i);
-}
-
-module poppy_snake_mini(nTwoSegments=4, segmentLength=elementLenght, nLayer=1){
-
-  for (i=[0:nTwoSegments-1]) {
-    translate([0,i*2*(segmentLength+3*(OlloSpacing)),0])
-      if (i==0) {
-        snake_two_segments(segmentLength, nLayer, false);
-      } else {
-        snake_two_segments(segmentLength, nLayer, true);
+  if (legType=="default") {
+    xl320_two_horns();
+    add_U_horn_to_U_horn_frame(defaultUhornUhornLength)
+      rotate([0,0,135]){
+        xl320_two_horns();
+        rotate([0,0,180])
+          add_side_to_side_frame(defaultLegLength){
+            xl320_two_horns();
+            rotate([0,0,135])
+            add_feet(feetType);
+          }
       }
   }
+}
 
+module add_feet(feetType){
+
+  if (feetType=="default") {
+    U_horn_frame(defaultFeetLength);
+  }
+
+}
+
+module poppy_multipod_mini(nLegs=nLegs, supportRadius=supportRadius, supportType="ring", legType="default", feetType="default"){
+
+  add_support(nLegs, supportRadius, supportType);
+  for (i=[1:nLegs]) {
+    rotate([0,0,compute_leg_angle(i, nLegs)])
+      translate([supportRadius,0,0])
+        rotate([0,0,-90])
+          add_leg(legType, feetType);
+  }
 }
 
 
@@ -65,5 +76,12 @@ echo("##########");
 
 p = 1;
 if (p==1) {
-  poppy_snake_mini();
+  poppy_multipod_mini(3);
+
+  translate([500,0,0])
+    poppy_multipod_mini(4);
+
+  translate([1000,0,0])
+    poppy_multipod_mini(6);
+
 }
