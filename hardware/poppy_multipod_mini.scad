@@ -101,23 +101,23 @@ echo("##########");
 
 p = 1;
 if (p==1) {
-    
+
   translate([0,0,0])
     poppy_multipod_mini(nLegs=3, legMotorsRadius=50, supportType="ring", legType="default", feetType="default");
 
-  translate([500,0,0])
+  /*translate([500,0,0])
     poppy_multipod_mini(nLegs=4, legMotorsRadius=50, supportType="ring", legType="default", feetType="default");
 
   translate([1000,0,0])
-    poppy_multipod_mini(nLegs=6, legMotorsRadius=80, supportType="ring", legType="default", feetType="default");
-    
+    poppy_multipod_mini(nLegs=6, legMotorsRadius=80, supportType="ring", legType="default", feetType="default");*/
+
   translate([0,500,0])
     poppy_multipod_mini(nLegs=3, legMotorsRadius=50, supportType="circle", legType="default", feetType="default");
 
-  translate([500,500,0])
+  /*translate([500,500,0])
     poppy_multipod_mini(nLegs=4, legMotorsRadius=50, supportType="circle", legType="default", feetType="default");
 
   translate([1000,500,0])
-    poppy_multipod_mini(nLegs=6, legMotorsRadius=80, supportType="circle", legType="default", feetType="default");
+    poppy_multipod_mini(nLegs=6, legMotorsRadius=80, supportType="circle", legType="default", feetType="default");*/
 
 }
